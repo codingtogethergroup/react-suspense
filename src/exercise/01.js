@@ -2,22 +2,26 @@
 // http://localhost:3000/isolated/exercise/01.js
 
 import * as React from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 // 🐨 you'll also need to get the fetchPokemon function from ../pokemon:
-import {PokemonDataView} from '../pokemon'
+import {fetchPokemon, PokemonDataView} from '../pokemon'
 
 // 💰 use it like this: fetchPokemon(pokemonName).then(handleSuccess, handleFailure)
 
 // 🐨 create a variable called "pokemon" (using let)
 
 // 💣 delete this now...
-const pokemon = {
-  name: 'TODO',
-  number: 'TODO',
-  attacks: {
-    special: [{name: 'TODO', type: 'TODO', damage: 'TODO'}],
-  },
-  fetchedAt: 'TODO',
-}
+
+let data = {pokemon: null, error: null}
+
+const getPokemon = fetchPokemon('pikachu')
+  .then(pokemon => {
+    data.pokemon = pokemon
+    console.log(pokemon)
+  })
+  .catch(e => {
+    data.error = e
+  })
 
 // We don't need the app to be mounted to know that we want to fetch the pokemon
 // named "pikachu" so we can go ahead and do that right here.
@@ -27,11 +31,9 @@ const pokemon = {
 // 💰 For example: somePromise.then(resolvedValue => (someValue = resolvedValue))
 
 function PokemonInfo() {
-  // 🐨 if there's no pokemon yet, then throw the pokemonPromise
-  // 💰 (no, for real. Like: `throw pokemonPromise`)
-
-  // if the code gets it this far, then the pokemon variable is defined and
-  // rendering can continue!
+  const {pokemon, error} = data
+  if (data.error) throw error
+  if (!data.pokemon) throw getPokemon
   return (
     <div>
       <div className="pokemon-info__img-wrapper">
@@ -42,12 +44,20 @@ function PokemonInfo() {
   )
 }
 
+const ErrorFallback = props => {
+  return <p>{JSON.stringify(props.error.message)}</p>
+}
+
 function App() {
   return (
     <div className="pokemon-info-app">
       <div className="pokemon-info">
         {/* 🐨 Wrap the PokemonInfo component with a React.Suspense component with a fallback */}
-        <PokemonInfo />
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <React.Suspense fallback={<p>Loading..</p>}>
+            <PokemonInfo />
+          </React.Suspense>
+        </ErrorBoundary>
       </div>
     </div>
   )

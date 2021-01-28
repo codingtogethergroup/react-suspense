@@ -15,3 +15,6 @@ const rootEl = document.getElementById('root')
 // the new way:
 const root = ReactDOM.createRoot(rootEl)
 root.render(<App />)
+
+// umount the UI from the element
+// root.unmount()
